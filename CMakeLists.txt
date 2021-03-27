@@ -81,8 +81,6 @@ endif()
 include(GenerateExportHeader)
 generate_export_header(${TARGET_NAME})
 
-target_compile_features(${TARGET_NAME} PRIVATE cxx_std_17)
-
 target_include_directories(${TARGET_NAME}
                            PUBLIC
                            "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/>"

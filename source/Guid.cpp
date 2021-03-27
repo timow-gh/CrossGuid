@@ -139,7 +139,6 @@ Guid::Guid(const std::string& fromString) {
     }
   }
 
-  // if there were fewer than 16 bytes in the string then guid is bad
   if(nextByte < 16) {
     zeroify();
     return;

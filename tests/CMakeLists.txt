@@ -43,8 +43,6 @@ if (CMAKE_VERSION VERSION_LESS 2.8.11)
     include_directories("${gtest_SOURCE_DIR}/include")
 endif ()
 
-set(CMAKE_CXX_STANDARD 17)
-
 if (WIN32)
     set(gtest_mainDir "$<SHELL_PATH:$<TARGET_FILE_DIR:gtest_main>>")
     set(gtest_mainExecPath "PATH=${gtest_mainDir}$<SEMICOLON>$ENV{PATH}")
