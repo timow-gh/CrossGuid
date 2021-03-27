@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.16)
 
 if (CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
     message(FATAL_ERROR "Do not build in-source.
@@ -30,7 +30,6 @@ include(CopyDllsForDebug)
 include(Coverage)
 
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
-option(${PROJECT_NAME}_USE_ADDITIONAL_SOURCEFILE "Use the additional source file" ON)
 option(${PROJECT_NAME}_INSTALL "" ON)
 option(${PROJECT_NAME}_EXPORT_TARGETS_TO_USER_REGISTRY "" OFF)
 
@@ -157,13 +156,13 @@ if (${PROJECT_NAME}_INSTALL)
     install(FILES
             "${TARGET_HEADER}"
             DESTINATION
-            "${CMAKE_INSTALL_INCLUDEDIR}/crossguid")
+            "${CMAKE_INSTALL_INCLUDEDIR}/CrossGuid")
 
     string(TOLOWER "${TARGET_NAME}_export.h" GENERATED_TARGET_EXPORTS_FILE)
     install(FILES
             "${CMAKE_CURRENT_BINARY_DIR}/${GENERATED_TARGET_EXPORTS_FILE}"
             DESTINATION
-            "${CMAKE_INSTALL_INCLUDEDIR}/crossguid")
+            "${CMAKE_INSTALL_INCLUDEDIR}/CrossGuid")
 
     if (${PROJECT_NAME}_EXPORT_TARGETS_TO_USER_REGISTRY)
         export(EXPORT ${PROJECT_NAME}_Targets
