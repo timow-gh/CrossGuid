@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include "crossguid/guid.hpp"
+#include "CrossGuid/Guid.hpp"
 
 #ifdef GUID_LIBUUID
 #include <uuid/uuid.h>

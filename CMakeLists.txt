@@ -50,11 +50,11 @@ find_lto(CXX)
 set(TARGET_NAME ${PROJECT_NAME})
 
 set(TARGET_HEADER
-    include/crossguid/guid.hpp
+    include/CrossGuid/Guid.hpp
     )
 
 set(TARGET_SOURCES
-    source/guid.cpp
+    source/Guid.cpp
     )
 
 if (NOT_APPLE)

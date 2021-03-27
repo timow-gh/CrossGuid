@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "crossguid/guid.hpp"
+#include "CrossGuid/Guid.hpp"
 
 using namespace xg;
 

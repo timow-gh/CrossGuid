@@ -25,12 +25,9 @@ THE SOFTWARE.
 #pragma once
 
 #include <array>
-#include <functional>
 #include <iomanip>
 #include <iostream>
-#include <sstream>
 #include <string>
-#include <utility>
 
 #include "crossguid_export.h"
 
