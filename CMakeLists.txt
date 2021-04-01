@@ -1,15 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 
-if (CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
-    message(FATAL_ERROR "Do not build in-source.
-    Please remove CMakeCache.txt and the CMakeFiles/ directory. Then build out-of-source.")
-endif ()
-
-project(
-        "CrossGuid"
+project("CrossGuid"
         VERSION 0.1.0
-        LANGUAGES CXX
-)
+        LANGUAGES CXX)
 
 if (NOT CMAKE_BUILD_TYPE)
     message(STATUS "No build type selected, default to Release")
@@ -24,97 +17,86 @@ include(CMakePackageConfigHelpers)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-include(LTO)
-include(Warnings)
-include(CopyDllsForDebug)
-include(Coverage)
-
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 option(${PROJECT_NAME}_INSTALL "" ON)
 option(${PROJECT_NAME}_EXPORT_TARGETS_TO_USER_REGISTRY "" OFF)
-
-
 cmake_dependent_option(${PROJECT_NAME}_BUILD_TESTS
-                       "Enable ${PROJECT_NAME} project tests targets" ON
-                       "BUILD_TESTING" OFF
-                       )
+        "Enable ${PROJECT_NAME} project tests targets" ON
+        "BUILD_TESTING" OFF)
+set(BUILD_EXAMPLES "" ON)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
+include(LTO)
+include(Warnings)
 find_lto(CXX)
+include(HelperFunctions)
 
-set(TARGET_NAME ${PROJECT_NAME})
-
-set(TARGET_HEADER
-    include/CrossGuid/Guid.hpp
-    )
-
-set(TARGET_SOURCES
-    source/Guid.cpp
-    )
-
-if (NOT_APPLE)
+if (NOT CMAKE_GENERATOR STREQUAL "Xcode")
     set(CMAKE_INSTALL_RPATH $ORIGIN)
 endif ()
 
+set(TARGET_NAME ${PROJECT_NAME})
 add_library(${TARGET_NAME}
-            ${TARGET_SOURCES}
-            ${TARGET_HEADER}
-            )
+        source/Guid.cpp
+        include/CrossGuid/Guid.hpp)
+add_library(CrossGuid::CrossGuid ALIAS ${TARGET_NAME})
 
-if(WIN32)
+if (MSVC)
     target_compile_definitions(${TARGET_NAME} PRIVATE GUID_WINDOWS)
-elseif(APPLE)
+elseif (CMAKE_GENERATOR STREQUAL "Xcode")
     find_library(CFLIB CoreFoundation)
     target_link_libraries(${TARGET_NAME} ${CFLIB})
     target_compile_definitions(${TARGET_NAME} PRIVATE GUID_CFUUID)
-else()
+else ()
     find_package(uuid REQUIRED)
     target_link_libraries(${TARGET_NAME} PRIVATE uuid::uuid)
     target_compile_definitions(${TARGET_NAME} PRIVATE GUID_LIBUUID)
-endif()
+endif ()
 
 include(GenerateExportHeader)
 generate_export_header(${TARGET_NAME})
 
 target_include_directories(${TARGET_NAME}
-                           PUBLIC
-                           "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/>"
-                           "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-                           "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>"
-                           )
+        PUBLIC
+        "$<BUILD_INTERFACE:${CrossGuid_BINARY_DIR}/>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
+        )
 
 set_target_properties(${TARGET_NAME}
-                      PROPERTIES
-                      SOVERSION ${PROJECT_VERSION_MAJOR}
-                      VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}
-                      DEBUG_POSTFIX d
-                      )
+        PROPERTIES
+        SOVERSION ${PROJECT_VERSION_MAJOR}
+        VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}
+        DEBUG_POSTFIX d)
 
-add_library(CrossGuid::CrossGuid ALIAS ${TARGET_NAME})
+if(MSVC)
+    setMSVCOutputDirectories(${TARGET_NAME})
+endif ()
 
 target_set_warnings(${TARGET_NAME} ENABLE ALL AS_ERROR ALL DISABLE Annoying)
 target_enable_lto(${TARGET_NAME} optimized)
 
+if (BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif ()
+
 if (${PROJECT_NAME}_BUILD_TESTS)
-    list(APPEND CUSTOM_COVERAGE_EXCLUDE "/tests/")
     add_subdirectory(tests)
-    configure_file(
-            ${CMAKE_CURRENT_LIST_DIR}/cmake/CTestCustom.cmake.in
-            ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake
-            @ONLY
-    )
 endif ()
 
 if (${PROJECT_NAME}_INSTALL)
     set(CPACK_RESOURCE_FILE_README ${CMAKE_CURRENT_LIST_DIR}/README.md)
     include(CPack)
 
-    set(${PROJECT_NAME}_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}" CACHE STRING "Path to install ${PROJECT_NAME} Config*.cmake files to.")
-    set(${PROJECT_NAME}_MODULE_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake" CACHE STRING "Path to install ${PROJECT_NAME}'s .cmake  module files to.")
+    if (NOT CMAKE_GENERATOR STREQUAL "Xcode")
+        file(RELATIVE_PATH relDir
+                ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}
+                ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}
+                )
+        set(CMAKE_INSTALL_RPATH $ORIGIN $ORIGIN/${relDir})
+    endif ()
 
     write_basic_package_version_file(
             ${PROJECT_NAME}ConfigVersion.cmake
@@ -122,8 +104,15 @@ if (${PROJECT_NAME}_INSTALL)
             COMPATIBILITY SameMajorVersion
     )
 
+    set(${PROJECT_NAME}_INSTALL_CMAKEDIR
+            "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
+            CACHE STRING "Path to install ${PROJECT_NAME} Config*.cmake files to.")
+    set(${PROJECT_NAME}_MODULE_INSTALL_DIR
+            "${CMAKE_INSTALL_LIBDIR}/cmake"
+            CACHE STRING "Path to install ${PROJECT_NAME}'s .cmake  module files to.")
+
     configure_package_config_file(
-            ${PROJECT_SOURCE_DIR}/cmake/${TARGET_NAME}Config.cmake.in
+            ${PROJECT_SOURCE_DIR}/cmake/${PROJECT_NAME}Config.cmake.in
             ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
             INSTALL_DESTINATION ${${PROJECT_NAME}_INSTALL_CMAKEDIR}
             PATH_VARS ${PROJECT_NAME}_MODULE_INSTALL_DIR
@@ -131,44 +120,44 @@ if (${PROJECT_NAME}_INSTALL)
             NO_CHECK_REQUIRED_COMPONENTS_MACRO
     )
 
-    install(
-            TARGETS
-            ${TARGET_NAME}
+    install(TARGETS ${TARGET_NAME}
             EXPORT ${PROJECT_NAME}_Targets
+            RUNTIME
+            DESTINATION ${CMAKE_INSTALL_BINDIR}
+            LIBRARY
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            ARCHIVE
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}
             INCLUDES
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    )
+            )
 
-    install(
-            EXPORT ${PROJECT_NAME}_Targets
+    install(EXPORT ${PROJECT_NAME}_Targets
             NAMESPACE ${PROJECT_NAME}::
             FILE ${PROJECT_NAME}Targets.cmake
             DESTINATION ${${PROJECT_NAME}_INSTALL_CMAKEDIR}
-    )
+            )
 
     install(FILES
             "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
             "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-            DESTINATION
-            "${${PROJECT_NAME}_INSTALL_CMAKEDIR}"
+            DESTINATION "${${PROJECT_NAME}_INSTALL_CMAKEDIR}"
             )
 
-    install(FILES
-            "${TARGET_HEADER}"
-            DESTINATION
-            "${CMAKE_INSTALL_INCLUDEDIR}/CrossGuid")
+    install(FILES "include/CrossGuid/Guid.hpp"
+            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/CrossGuid"
+            )
 
-    string(TOLOWER "${TARGET_NAME}_export.h" GENERATED_TARGET_EXPORTS_FILE)
-    install(FILES
-            "${CMAKE_CURRENT_BINARY_DIR}/${GENERATED_TARGET_EXPORTS_FILE}"
-            DESTINATION
-            "${CMAKE_INSTALL_INCLUDEDIR}/CrossGuid")
+    string(TOLOWER "crossGuid_export.h" GENERATED_TARGET_EXPORTS_FILE)
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${GENERATED_TARGET_EXPORTS_FILE}"
+            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/CrossGuid"
+            )
 
     if (${PROJECT_NAME}_EXPORT_TARGETS_TO_USER_REGISTRY)
         export(EXPORT ${PROJECT_NAME}_Targets
-               NAMESPACE ${PROJECT_NAME}::
-               FILE "${PROJECT_NAME}Targets.cmake"
-               )
+                NAMESPACE ${PROJECT_NAME}::
+                FILE "${PROJECT_NAME}Targets.cmake"
+                )
         export(PACKAGE ${PROJECT_NAME})
     endif ()
 endif ()
