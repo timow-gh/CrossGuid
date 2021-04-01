@@ -1,3 +1,5 @@
+option(INSTALL_GTEST OFF)
+mark_as_advanced(INSTALL_GTEST)
 include(FetchContent)
 FetchContent_Declare(
         googletest
