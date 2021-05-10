@@ -9,37 +9,23 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
 endif ()
 
-include(CTest)
-include(CMakeDependentOption)
-include(GNUInstallDirs)
-include(InstallRequiredSystemLibraries)
-include(CMakePackageConfigHelpers)
-
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 option(${PROJECT_NAME}_INSTALL "" ON)
-option(${PROJECT_NAME}_EXPORT_TARGETS_TO_USER_REGISTRY "" OFF)
-cmake_dependent_option(${PROJECT_NAME}_BUILD_TESTS
-        "Enable ${PROJECT_NAME} project tests targets" ON
-        "BUILD_TESTING" OFF)
-set(BUILD_EXAMPLES "" ON)
+option(${PROJECT_NAME}_BUILD_TESTS "" OFF)
+option(${PROJECT_NAME}_BUILD_EXAMPLES "" OFF)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
-include(LTO)
-include(Warnings)
-find_lto(CXX)
 include(HelperFunctions)
-
 if (NOT CMAKE_GENERATOR STREQUAL "Xcode")
     set(CMAKE_INSTALL_RPATH $ORIGIN)
 endif ()
 
-set(TARGET_NAME ${PROJECT_NAME})
-add_library(${TARGET_NAME}
+set(TARGET_NAME CrossGuid)
+add_library(${TARGET_NAME} SHARED
         source/Guid.cpp
         include/CrossGuid/Guid.hpp)
 add_library(CrossGuid::CrossGuid ALIAS ${TARGET_NAME})
@@ -72,21 +58,24 @@ set_target_properties(${TARGET_NAME}
         DEBUG_POSTFIX d)
 
 if(MSVC)
+    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS 1)
     setMSVCOutputDirectories(${TARGET_NAME})
 endif ()
-
-target_set_warnings(${TARGET_NAME} ENABLE ALL AS_ERROR ALL DISABLE Annoying)
-target_enable_lto(${TARGET_NAME} optimized)
 
 if (BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif ()
 
 if (${PROJECT_NAME}_BUILD_TESTS)
+    include(CTest)
     add_subdirectory(tests)
 endif ()
 
 if (${PROJECT_NAME}_INSTALL)
+    include(GNUInstallDirs)
+    include(InstallRequiredSystemLibraries)
+    include(CMakePackageConfigHelpers)
+
     set(CPACK_RESOURCE_FILE_README ${CMAKE_CURRENT_LIST_DIR}/README.md)
     include(CPack)
 
