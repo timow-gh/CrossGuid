@@ -73,7 +73,7 @@ private:
 
 CROSSGUID_EXPORT Guid newGuid();
 
-std::ostream& operator<<(std::ostream& s, const xg::Guid& guid) {
+inline std::ostream& operator<<(std::ostream& s, const xg::Guid& guid) {
   std::ios_base::fmtflags f(
       s.flags()); // politely don't leave the ostream in hex mode
   s << std::hex << std::setfill('0') << std::setw(2) << (int)guid._bytes[0]
@@ -116,7 +116,7 @@ namespace std {
   // Template specialization for std::swap<Guid>() --
   // See guid.cpp for the function definition
   template<>
-  void swap(xg::Guid& lhs, xg::Guid& rhs) noexcept {
+  inline void swap(xg::Guid& lhs, xg::Guid& rhs) noexcept {
     lhs.swap(rhs);
   }
 
