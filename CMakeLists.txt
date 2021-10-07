@@ -25,7 +25,7 @@ option(${PROJECT_NAME}_BUILD_EXAMPLES "" OFF)
 
 preamble()
 
-add_library(CrossGuid SHARED
+add_library(CrossGuid
         source/Guid.cpp
         include/CrossGuid/Guid.hpp)
 add_library(CrossGuid::CrossGuid ALIAS CrossGuid)
@@ -57,7 +57,7 @@ set_target_properties(CrossGuid
         VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}
         DEBUG_POSTFIX d
         LINKER_LANGUAGE CXX
-        EXPORT_NAME Graphics)
+        EXPORT_NAME CrossGuid)
 
 if (BUILD_EXAMPLES)
     add_subdirectory(examples)
