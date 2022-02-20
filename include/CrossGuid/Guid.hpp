@@ -76,17 +76,23 @@ CROSSGUID_EXPORT Guid newGuid();
 inline std::ostream& operator<<(std::ostream& s, const xg::Guid& guid) {
   std::ios_base::fmtflags f(
       s.flags()); // politely don't leave the ostream in hex mode
-  s << std::hex << std::setfill('0') << std::setw(2) << (int)guid._bytes[0]
-    << std::setw(2) << (int)guid._bytes[1] << std::setw(2)
-    << (int)guid._bytes[2] << std::setw(2) << (int)guid._bytes[3] << "-"
-    << std::setw(2) << (int)guid._bytes[4] << std::setw(2)
-    << (int)guid._bytes[5] << "-" << std::setw(2) << (int)guid._bytes[6]
-    << std::setw(2) << (int)guid._bytes[7] << "-" << std::setw(2)
-    << (int)guid._bytes[8] << std::setw(2) << (int)guid._bytes[9] << "-"
-    << std::setw(2) << (int)guid._bytes[10] << std::setw(2)
-    << (int)guid._bytes[11] << std::setw(2) << (int)guid._bytes[12]
-    << std::setw(2) << (int)guid._bytes[13] << std::setw(2)
-    << (int)guid._bytes[14] << std::setw(2) << (int)guid._bytes[15];
+  s << std::hex << std::setfill('0') << std::setw(2)
+    << static_cast<int>(guid._bytes[0]) << std::setw(2)
+    << static_cast<int>(guid._bytes[1]) << std::setw(2)
+    << static_cast<int>(guid._bytes[2]) << std::setw(2)
+    << static_cast<int>(guid._bytes[3]) << "-" << std::setw(2)
+    << static_cast<int>(guid._bytes[4]) << std::setw(2)
+    << static_cast<int>(guid._bytes[5]) << "-" << std::setw(2)
+    << static_cast<int>(guid._bytes[6]) << std::setw(2)
+    << static_cast<int>(guid._bytes[7]) << "-" << std::setw(2)
+    << static_cast<int>(guid._bytes[8]) << std::setw(2)
+    << static_cast<int>(guid._bytes[9]) << "-" << std::setw(2)
+    << static_cast<int>(guid._bytes[10]) << std::setw(2)
+    << static_cast<int>(guid._bytes[11]) << std::setw(2)
+    << static_cast<int>(guid._bytes[12]) << std::setw(2)
+    << static_cast<int>(guid._bytes[13]) << std::setw(2)
+    << static_cast<int>(guid._bytes[14]) << std::setw(2)
+    << static_cast<int>(guid._bytes[15]);
   s.flags(f);
   return s;
 }
