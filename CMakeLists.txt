@@ -18,12 +18,26 @@ project("CrossGuid"
         LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
+include(setup_export_set_installation)
+include(project_preamble)
+project_preamble()
 
+if ((CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR))
+    set(IS_TOP_LEVEL_PROJECT TRUE)
+else ()
+    set(IS_TOP_LEVEL_PROJECT FALSE)
+endif ()
+message(STATUS "IS_TOP_LEVEL_PROJECT: ${IS_TOP_LEVEL_PROJECT}")
+
+if (IS_TOP_LEVEL_PROJECT)
+    option(${PROJECT_NAME}_BUILD_TESTS "" ON)
+    option(${PROJECT_NAME}_BUILD_EXAMPLES "" ON)
+else ()
+    option(${PROJECT_NAME}_BUILD_TESTS "" OFF)
+    option(${PROJECT_NAME}_BUILD_EXAMPLES "" OFF)
+endif ()
 option(${PROJECT_NAME}_INSTALL "" ON)
-option(${PROJECT_NAME}_BUILD_TESTS "" OFF)
-option(${PROJECT_NAME}_BUILD_EXAMPLES "" OFF)
 
-preamble()
 
 add_library(CrossGuid
         source/Guid.cpp
@@ -81,6 +95,11 @@ if (${PROJECT_NAME}_INSTALL)
     string(TOLOWER "crossGuid_export.h" GENERATED_TARGET_EXPORTS_FILE)
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${GENERATED_TARGET_EXPORTS_FILE}"
             DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/CrossGuid")
-    setupExportSetInstall("${PROJECT_NAME}" "CrossGuidExportSet")
+    setup_export_set_installation(
+            ${PROJECT_NAME}
+            "CrossGuidExportSet"
+            "Config.cmake.in"
+            ${PROJECT_VERSION_MAJOR} ${PROJECT_VERSION_MINOR} ${PROJECT_VERSION_PATCH}
+    )
 endif ()
 
